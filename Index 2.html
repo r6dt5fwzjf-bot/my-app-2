@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>二択価値観ゲーム「どっち派？」〜ふたりの取扱説明書〜</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'M PLUS Rounded 1c', sans-serif;
+      background: linear-gradient(135deg, #fff5f7 0%, #f0f4ff 100%);
+      min-height: 100vh;
+    }
+    .card-shadow {
+      box-shadow: 0 10px 25px -5px rgba(255, 182, 193, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+    }
+    .animate-bounce-short {
+      animation: bounce 0.6s ease infinite alternate;
+    }
+    @keyframes bounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-8px); }
+    }
+    .gradient-btn-a {
+      background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+    }
+    .gradient-btn-b {
+      background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center justify-center p-4 min-h-screen text-slate-700">
+
+  <!-- Main Container -->
+  <div id="app" class="w-full max-w-md bg-white rounded-3xl p-6 card-shadow relative overflow-hidden my-auto border-2 border-pink-100">
+    
+    <header class="flex justify-between items-center mb-6 pb-3 border-b border-pink-100">
+      <div class="flex items-center space-x-2">
+        <span class="text-2xl">💖</span>
+        <h1 class="font-bold text-lg text-pink-600 tracking-wide">ふたりの「どっち派？」</h1>
+      </div>
+      <button id="reset-btn" class="text-xs text-slate-400 hover:text-slate-600 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition" onclick="resetApp()">
+        <i class="fa-solid fa-rotate-right mr-1"></i>最初から
+      </button>
+    </header>
+
+    <div id="screen-welcome" class="space-y-6 text-center py-4">
+      <div class="inline-block p-4 bg-pink-50 rounded-full text-pink-500 mb-2 animate-bounce-short">
+        <i class="fa-solid fa-heart-circle-bolt text-5xl"></i>
+      </div>
+      <h2 class="text-2xl font-extrabold text-slate-800">二人の仲深まり度チェック</h2>
+      <p class="text-sm text-slate-600 leading-relaxed px-2">
+        喧嘩した時や普段の価値観、どれくらい一致してる？<br>
+        お互い交互に直感で答えて、マッチ度と「二人の取扱説明書」をGETしよう！
+      </p>
+
+      <div class="bg-pink-50/80 p-4 rounded-2xl text-left space-y-2 border border-pink-100 text-xs text-pink-800">
+        <div class="font-bold flex items-center"><i class="fa-solid fa-gamepad mr-2"></i>遊び方：</div>
+        <p>1. まず<b>【プレイヤー1】</b>がすべての質問に直感で答えます。</p>
+        <p>2. 次に<b>【プレイヤー2】</b>に交替して回答！</p>
+        <p>3. 最後に一致度とAIからの「仲直りアドバイス」をチェック！</p>
+      </div>
+
+      <button onclick="startGame()" class="w-full py-4 bg-pink-500 hover:bg-pink-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-pink-200 transition transform active:scale-95 flex items-center justify-center space-x-2">
+        <span>スタート！</span>
+        <i class="fa-solid fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <div id="screen-setup" class="hidden space-y-6 text-center py-4">
+      <h2 class="text-xl font-bold text-slate-800"><i class="fa-solid fa-user-pen text-pink-500 mr-2"></i>ニックネームの登録</h2>
+      
+      <div class="space-y-4 text-left">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">先攻（プレイヤー1）のなまえ</label>
+          <input type="text" id="p1-name" value="彼女" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-pink-400 font-bold text-slate-700">
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">後攻（プレイヤー2）のなまえ</label>
+          <input type="text" id="p2-name" value="彼氏" class="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-pink-400 font-bold text-slate-700">
+        </div>
+      </div>
+
+      <button onclick="beginQuiz()" class="w-full py-4 bg-gradient-to-r from-pink-500 to-rose-500 hover:opacity-95 text-white font-bold text-lg rounded-2xl shadow-lg shadow-pink-200 transition transform active:scale-95">
+        回答をはじめる！
+      </button>
+    </div>
+
+    <div id="screen-quiz" class="hidden space-y-6">
+      <!-- Player Turn Badge -->
+      <div class="flex justify-between items-center">
+        <span id="turn-badge" class="px-3 py-1 bg-pink-100 text-pink-700 text-xs font-bold rounded-full">
+          プレイヤー1のターン
+        </span>
+        <span id="progress-text" class="text-xs font-bold text-slate-400">
+          Q1 / 7
+        </span>
+      </div>
+
+      <!-- Question Card -->
+      <div class="bg-slate-50 p-5 rounded-2xl border border-slate-100 min-h-[100px] flex items-center justify-center text-center">
+        <h3 id="question-text" class="text-base font-bold text-slate-800 leading-snug">
+          質問文がここに表示されます
+        </h3>
+      </div>
+
+      <!-- Choice Buttons -->
+      <div class="space-y-3">
+        <button onclick="selectOption('A')" class="w-full p-4 gradient-btn-a text-white font-bold rounded-2xl text-left shadow-md transition transform active:scale-95 flex items-center justify-between group">
+          <span id="option-a-text" class="text-sm">選択肢A</span>
+          <i class="fa-regular fa-circle-check text-lg opacity-80 group-hover:opacity-100"></i>
+        </button>
+
+        <button onclick="selectOption('B')" class="w-full p-4 gradient-btn-b text-white font-bold rounded-2xl text-left shadow-md transition transform active:scale-95 flex items-center justify-between group">
+          <span id="option-b-text" class="text-sm">選択肢B</span>
+          <i class="fa-regular fa-circle-check text-lg opacity-80 group-hover:opacity-100"></i>
+        </button>
+      </div>
+    </div>
+
+    <div id="screen-switch" class="hidden space-y-6 text-center py-8">
+      <div class="inline-block p-4 bg-indigo-50 rounded-full text-indigo-500 mb-2 animate-bounce">
+        <i class="fa-solid fa-arrows-rotate text-5xl"></i>
+      </div>
+      <h2 class="text-2xl font-bold text-slate-800"><span id="next-player-name">彼氏</span> さんのターン！</h2>
+      <p class="text-sm text-slate-600 px-4">
+        スマホを <span id="next-player-name-2" class="font-bold text-pink-600">彼氏</span> さんに渡してください！<br>
+        先攻の回答は見えないので安心してね🤫
+      </p>
+
+      <button onclick="startPlayer2Quiz()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg rounded-2xl shadow-lg shadow-indigo-200 transition transform active:scale-95">
+        画面を受け取って回答する
+      </button>
+    </div>
+
+    <div id="screen-result" class="hidden space-y-6 py-2">
+      <div class="text-center space-y-1">
+        <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">RESULT</span>
+        <h2 class="text-xl font-black text-slate-800">ふたりの価値観一致度</h2>
+      </div>
+
+      <!-- Score Gauge -->
+      <div class="bg-gradient-to-br from-pink-500 to-rose-500 p-6 rounded-3xl text-white text-center shadow-lg relative overflow-hidden">
+        <div class="text-6xl font-black tracking-tight my-2" id="score-text">0%</div>
+        <p id="score-comment" class="text-xs font-bold opacity-90">相性バッチリ！</p>
+      </div>
+
+      <!-- Detailed Breakdown -->
+      <div id="breakdown-list" class="space-y-3 max-h-48 overflow-y-auto pr-1">
+        <!-- Javascript populates this -->
+      </div>
+
+      <!-- AI Analysis Card -->
+      <div class="bg-amber-50 p-4 rounded-2xl border border-amber-200 space-y-3">
+        <div class="flex items-center space-x-2 text-amber-800 font-bold text-xs">
+          <i class="fa-solid fa-sparkles text-amber-500"></i>
+          <span>Gemini AI による二人の取説＆アドバイス</span>
+        </div>
+        <p id="ai-advice" class="text-xs text-slate-700 leading-relaxed min-h-[60px]">
+          AIアドバイスを生成中...✨
+        </p>
+        <button id="ai-btn" onclick="fetchAIAdvice()" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold rounded-xl shadow transition">
+          <i class="fa-solid fa-wand-magic-sparkles mr-1"></i>もう一度AIに聞く
+        </button>
+      </div>
+
+      <button onclick="resetApp()" class="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold rounded-2xl shadow transition">
+        もう一度遊ぶ
+      </button>
+    </div>
+
+  </div>
+
+  <script>
+    // Questions Database
+    const defaultQuestions = [
+      {
+        id: 1,
+        question: "喧嘩したときの理想の解決スタイルは？",
+        optionA: "⚡️ その日のうちに話し合ってスッキリしたい",
+        optionB: "🌙 一人になって冷静になる時間がほしい"
+      },
+      {
+        id: 2,
+        question: "相手が不機嫌そうなときの対応は？",
+        optionA: "💬 「どうしたの？」と優しく理由を聞く",
+        optionB: "☕️ 触れずにそっとしておいて美味しいお菓子を渡す"
+      },
+      {
+        id: 3,
+        question: "仲直りのキッカケとして嬉しいのは？",
+        optionA: "🗣️ 「ごめんね」と言葉でしっかり伝えてもらう",
+        optionB: "🤝 照れくさそうにぎゅっとハグや手に触れる"
+      },
+      {
+        id: 4,
+        question: "お互いの価値観のズレを感じたときは？",
+        optionA: "⚖️ とことん話し合って着地点（ルール）を作る",
+        optionB: "🌱 「人は人、自分は自分」と違いを楽しむ"
+      },
+      {
+        id: 5,
+        question: "落ち込んでいるときにされたら嬉しいのは？",
+        optionA: "👂 ただひたすら話を聞いて共感してほしい",
+        optionB: "💡 解決策のアドバイスや気を紛らわすデートに誘ってほしい"
+      },
+      {
+        id: 6,
+        question: "連絡（LINE）の頻度についての本音は？",
+        optionA: "📱 用事がなくてもこまめにやり取りしたい",
+        optionB: "✉️ 用件があるときだけで自分のペースを守りたい"
+      },
+      {
+        id: 7,
+        question: "記念日や誕生日の過ごし方は？",
+        optionA: "🎉 おしゃれなお店や旅行で特別にお祝いしたい",
+        optionB: "🏠 おうちでゆっくり好きな料理を食べたい"
+      }
+    ];
+
+    let p1Name = "彼女";
+    let p2Name = "彼氏";
+    let currentStep = "welcome"; // welcome, setup, p1, switch, p2, result
+    let currentQuestionIndex = 0;
+
+    let p1Answers = [];
+    let p2Answers = [];
+
+    // Navigation Helper
+    function showScreen(screenId) {
+      const screens = ['screen-welcome', 'screen-setup', 'screen-quiz', 'screen-switch', 'screen-result'];
+      screens.forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(screenId).classList.remove('hidden');
+    }
+
+    function startGame() {
+      showScreen('screen-setup');
+    }
+
+    function beginQuiz() {
+      p1Name = document.getElementById('p1-name').value.trim() || "プレイヤー1";
+      p2Name = document.getElementById('p2-name').value.trim() || "プレイヤー2";
+
+      currentStep = 'p1';
+      currentQuestionIndex = 0;
+      p1Answers = [];
+      p2Answers = [];
+
+      updateQuizScreen();
+      showScreen('screen-quiz');
+    }
+
+    function updateQuizScreen() {
+      const q = defaultQuestions[currentQuestionIndex];
+      const isP1 = currentStep === 'p1';
+      
+      const turnBadge = document.getElementById('turn-badge');
+      turnBadge.innerText = isP1 ? `${p1Name} さんのターン` : `${p2Name} さんのターン`;
+      turnBadge.className = isP1 
+        ? "px-3 py-1 bg-pink-100 text-pink-700 text-xs font-bold rounded-full"
+        : "px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full";
+
+      document.getElementById('progress-text').innerText = `Q${currentQuestionIndex + 1} / ${defaultQuestions.length}`;
+      document.getElementById('question-text').innerText = q.question;
+      document.getElementById('option-a-text').innerText = q.optionA;
+      document.getElementById('option-b-text').innerText = q.optionB;
+    }
+
+    function selectOption(choice) {
+      if (currentStep === 'p1') {
+        p1Answers.push(choice);
+        if (currentQuestionIndex < defaultQuestions.length - 1) {
+          currentQuestionIndex++;
+          updateQuizScreen();
+        } else {
+          // P1 Finished -> Switch Screen
+          document.getElementById('next-player-name').innerText = p2Name;
+          document.getElementById('next-player-name-2').innerText = p2Name;
+          showScreen('screen-switch');
+        }
+      } else if (currentStep === 'p2') {
+        p2Answers.push(choice);
+        if (currentQuestionIndex < defaultQuestions.length - 1) {
+          currentQuestionIndex++;
+          updateQuizScreen();
+        } else {
+          // P2 Finished -> Result Screen
+          showResult();
+        }
+      }
+    }
+
+    function startPlayer2Quiz() {
+      currentStep = 'p2';
+      currentQuestionIndex = 0;
+      updateQuizScreen();
+      showScreen('screen-quiz');
+    }
+
+    function showResult() {
+      showScreen('screen-result');
+
+      // Calculate score
+      let matchCount = 0;
+      for (let i = 0; i < defaultQuestions.length; i++) {
+        if (p1Answers[i] === p2Answers[i]) {
+          matchCount++;
+        }
+      }
+
+      const scorePercent = Math.round((matchCount / defaultQuestions.length) * 100);
+      document.getElementById('score-text').innerText = `${scorePercent}%`;
+
+      let scoreComment = "";
+      if (scorePercent === 100) scoreComment = "完璧！双子並みの価値観一致度✨";
+      else if (scorePercent >= 70) scoreComment = "相性バッチリ！お互いを理解し合えてるね💕";
+      else if (scorePercent >= 40) scoreComment = "お互いの個性をリスペクトできる良コンビ👍";
+      else scoreComment = "違いがあるからこそ補い合える！伸びしろ無限大🌱";
+      
+      document.getElementById('score-comment').innerText = scoreComment;
+
+      // Render breakdown
+      const listContainer = document.getElementById('breakdown-list');
+      listContainer.innerHTML = '';
+
+      defaultQuestions.forEach((q, idx) => {
+        const p1Choice = p1Answers[idx];
+        const p2Choice = p2Answers[idx];
+        const isMatch = p1Choice === p2Choice;
+
+        const item = document.createElement('div');
+        item.className = `p-3 rounded-xl border text-xs ${isMatch ? 'bg-emerald-50/60 border-emerald-200' : 'bg-slate-50 border-slate-200'}`;
+        
+        const p1Text = p1Choice === 'A' ? q.optionA : q.optionB;
+        const p2Text = p2Choice === 'A' ? q.optionA : q.optionB;
+
+        item.innerHTML = `
+          <div class="font-bold text-slate-800 mb-1 flex justify-between items-center">
+            <span>Q${idx+1}. ${q.question}</span>
+            <span class="${isMatch ? 'text-emerald-600' : 'text-slate-400'} font-bold">
+              ${isMatch ? '<i class="fa-solid fa-check-double mr-1"></i>一致' : '<i class="fa-solid fa-code-compare mr-1"></i>違い'}
+            </span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 text-[11px] text-slate-600 mt-2">
+            <div class="bg-white p-2 rounded border border-slate-100">
+              <span class="font-bold text-pink-600 block mb-0.5">${p1Name}:</span>
+              ${p1Text}
+            </div>
+            <div class="bg-white p-2 rounded border border-slate-100">
+              <span class="font-bold text-indigo-600 block mb-0.5">${p2Name}:</span>
+              ${p2Text}
+            </div>
+          </div>
+        `;
+        listContainer.appendChild(item);
+      });
+
+      // Call AI for personalized advice
+      fetchAIAdvice();
+    }
+
+    async function fetchAIAdvice() {
+      const adviceEl = document.getElementById('ai-advice');
+      const btn = document.getElementById('ai-btn');
+
+      adviceEl.innerHTML = `<span class="inline-block animate-spin mr-2"><i class="fa-solid fa-spinner"></i></span>二人の回答結果を読み込んでアドバイスを作成中...`;
+      btn.disabled = true;
+      btn.classList.add('opacity-50');
+
+      // Prepare Prompt
+      let summaryText = `【${p1Name}】と【${p2Name}】の「価値観二択ゲーム」の結果です。\n\n`;
+      defaultQuestions.forEach((q, idx) => {
+        const p1A = p1Answers[idx] === 'A' ? q.optionA : q.optionB;
+        const p2A = p2Answers[idx] === 'A' ? q.optionA : q.optionB;
+        summaryText += `Q${idx+1}: ${q.question}\n-${p1Name}: ${p1A}\n-${p2Name}: ${p2A}\n\n`;
+      });
+
+      const systemPrompt = "あなたは温かく親しみやすいカップル専門の仲良しカウンセラーAIです。二人の二択テストの結果を見て、二人の関係性の特徴と、喧嘩した時や普段すれ違わないための実践的で前向きなアドバイスを、200文字程度の読みやすい文章で優しく伝えてください。";
+      const userQuery = summaryText;
+
+      const apiKey = "";
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      try {
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: userQuery }] }],
+            systemInstruction: { parts: [{ text: systemPrompt }] }
+          })
+        });
+
+        const data = await response.json();
+        const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (generatedText) {
+          adviceEl.innerText = generatedText;
+        } else {
+          adviceEl.innerText = "お互いの違いを「面白い！」と受け入れ合うことで、二人の絆はさらに深まります。すれ違ったら優しく好みを聴き合ってみましょう！";
+        }
+      } catch (err) {
+        console.error(err);
+        adviceEl.innerText = "お互いの価値観の違いを知ることが仲良しの第一歩です！違いを楽しみながら素直な気持ちを伝え合いましょう💕";
+      } finally {
+        btn.disabled = false;
+        btn.classList.remove('opacity-50');
+      }
+    }
+
+    function resetApp() {
+      currentStep = 'welcome';
+      currentQuestionIndex = 0;
+      p1Answers = [];
+      p2Answers = [];
+      showScreen('screen-welcome');
+    }
+  </script>
+</body>
+</html>
